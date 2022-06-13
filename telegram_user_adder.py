@@ -9,6 +9,8 @@ import csv
 import random
 import traceback 
 import time
+import datetime
+from random import randrange
 
 class tg_user_adder():
 
@@ -91,19 +93,21 @@ class tg_user_adder():
                 else:
                     sys.exit("Invalid Mode Selected. Please Try Again.")
                 client(InviteToChannelRequest(target_group_entity,[user_to_add]))
-                print("Waiting 60 Seconds...")
-                time.sleep(60)
+                print("Waiting 90 Seconds...")
+                time.sleep(90)
                 success_count = success_count + 1
+                if success_count % 10 == 0:
+                    time.sleep(randrange(300, 500))
             except PeerFloodError:
                 traceback.print_exc()
-                print("Getting Flood Error from Telegram. You should stop script now.Please try again after some time.")
+                print("Getting Flood Error from Telegram. You should stop script now.Please try again after some time. 30 min cooldown started at: " + str(datetime.datetime.now()))
                 print('=============================================================================')
-                time.sleep(600)
+                time.sleep(1800)
             except FloodWaitError:
                 traceback.print_exc()
-                print("Getting Flood Error from Telegram. You should stop script now.Please try again after some time.")
+                print("Getting Flood Error from Telegram. You should stop script now.Please try again after some time. 30 min cooldown started at: " + str(datetime.datetime.now()))
                 print('=============================================================================')
-                time.sleep(600)
+                time.sleep(1800)
             except UserPrivacyRestrictedError:
                 print("The user's privacy settings do not allow you to do this. Skipping.")
                 print('=============================================================================')
