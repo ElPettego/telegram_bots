@@ -4,7 +4,7 @@ from telethon.sync import TelegramClient
 from telethon.tl.functions.messages import GetDialogsRequest
 from telethon.tl.types import InputPeerEmpty
 from telethon.tl.types import InputPeerEmpty, InputPeerChannel, InputPeerUser
-from telethon.errors.rpcerrorlist import PeerFloodError, UserPrivacyRestrictedError, UserChannelsTooMuchError, FloodWaitError
+from telethon.errors.rpcerrorlist import UserNotMutualContactError, PeerFloodError, UserPrivacyRestrictedError, UserChannelsTooMuchError, FloodWaitError
 import csv
 import random
 import traceback 
@@ -60,8 +60,7 @@ class tg_user_adder():
         chats.extend(result.chats)
 
         for chat in chats:
-            groups.append(chat)
-            
+            groups.append(chat)            
 
         print('Choose a group to add members:')
         i=0
@@ -77,12 +76,14 @@ class tg_user_adder():
 
         mode = int(input("Enter 1 to add by username or 2 to add by ID: "))
 
-        error_count = 0
+        #error_count = 0
         success_count = 0
 
         for user in users:
-            print('============================================================================= ACCOUNT AGGIUNTI: '+ str(success_count))
+            print('============================================================================= ACCOUNT AGGIUNTI: '+ str(success_count) + ' !!! ' + str(datetime.datetime.now()))
             try:
+                if user['username'][len(user['username'])-3:len (user['username'])].upper() == 'BOT':
+                    break
                 print ("Adding {}".format(user['username']))
                 if mode == 1:
                     if user['username'] == "":
@@ -93,22 +94,20 @@ class tg_user_adder():
                 else:
                     sys.exit("Invalid Mode Selected. Please Try Again.")
                 client(InviteToChannelRequest(target_group_entity,[user_to_add]))
-                print("Waiting 90 Seconds...")
-                time.sleep(90)
+                sleep_time = randrange(120, 180)
+                print("Waiting " + str(sleep_time) + " Seconds...")
+                time.sleep(sleep_time)
                 success_count = success_count + 1
                 if success_count % 10 == 0:
-                    time.sleep(randrange(300, 500))
-            except PeerFloodError:
+                    time_to_sleep = randrange(300, 500)
+                    print(str(datetime.datetime.now()) + ' --- time to sleep: ' + str(time_to_sleep))
+                    time.sleep(time_to_sleep)
+            except (PeerFloodError, FloodWaitError):
                 traceback.print_exc()
                 print("Getting Flood Error from Telegram. You should stop script now.Please try again after some time. 30 min cooldown started at: " + str(datetime.datetime.now()))
                 print('=============================================================================')
                 time.sleep(1800)
-            except FloodWaitError:
-                traceback.print_exc()
-                print("Getting Flood Error from Telegram. You should stop script now.Please try again after some time. 30 min cooldown started at: " + str(datetime.datetime.now()))
-                print('=============================================================================')
-                time.sleep(1800)
-            except UserPrivacyRestrictedError:
+            except (UserPrivacyRestrictedError, UserNotMutualContactError):
                 print("The user's privacy settings do not allow you to do this. Skipping.")
                 print('=============================================================================')
             except UserChannelsTooMuchError:
